@@ -1,0 +1,47 @@
+version: '3.8'  # Specify the version of Docker Compose
+
+services:
+  # Node.js backend service
+  server:
+    build: ./server                   # Build the image from server/Dockerfile
+    ports:
+      - '8001:8001'                   # Map local port 8001 to the server container's port 8001
+    environment:                      # MySQL connection details for the backend
+      - DB_HOST=mysql                 # MySQL container's hostname
+      - DB_USER=ali                   # MySQL username
+      - DB_PASSWORD=root              # MySQL password
+      - DB_NAME=crudmysql             # MySQL database name
+    depends_on:                       # Make sure MySQL starts before the backend
+      mysql:
+        condition: service_healthy
+
+  # React frontend service
+  client:
+    build: ./client                   # Build the image from client/Dockerfile
+    ports:
+      - '3000:3000'                   # Map local port 3000 to the client container's port 3000
+    depends_on:                       # Wait for the server to be running before starting the client
+      - server
+
+  # MySQL service
+  mysql:
+    image: mysql:8.0                  # Use MySQL version 8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: 'root'     # Root password for MySQL
+      MYSQL_DATABASE: crudmysql        # Create and use the 'crudmysql' database
+      MYSQL_USER: ali                  # MySQL user
+      MYSQL_PASSWORD: root             # Password for user 'ali'
+    ports:
+      - '3333:3306'                   # Map local port 3333 to the MySQL container's port 3306
+    volumes:
+      - mysql-data:/var/lib/mysql      # Persist MySQL data
+      - ./path/to/your/init.sql:/docker-entrypoint-initdb.d/init.sql  # Mount init.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+# Define named volumes for MySQL
+volumes:
+  mysql-data:
