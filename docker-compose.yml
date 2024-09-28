@@ -1,4 +1,3 @@
-version: '3.8'  # Specify the version of Docker Compose
 
 services:
   # Node.js backend service
@@ -27,7 +26,7 @@ services:
   mysql:
     image: mysql:8.0                  # Use MySQL version 8.0
     environment:
-      MYSQL_ROOT_PASSWORD: 'root'     # Root password for MySQL
+      MYSQL_ROOT_PASSWORD: root     # Root password for MySQL
       MYSQL_DATABASE: crudmysql        # Create and use the 'crudmysql' database
       MYSQL_USER: ali                  # MySQL user
       MYSQL_PASSWORD: root             # Password for user 'ali'
@@ -35,7 +34,7 @@ services:
       - '3333:3306'                   # Map local port 3333 to the MySQL container's port 3306
     volumes:
       - mysql-data:/var/lib/mysql      # Persist MySQL data
-      - ./path/to/your/init.sql:/docker-entrypoint-initdb.d/init.sql  # Mount init.sql
+      - ./initdb/init.sql:/docker-entrypoint-initdb.d/init.sql  # Mount init.sql
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       interval: 10s
