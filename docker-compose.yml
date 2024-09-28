@@ -1,46 +1,47 @@
-
 services:
-  # Node.js backend service
+
   server:
-    build: ./server                   # Build the image from server/Dockerfile
+    build: ./server                  
     ports:
-      - '8001:8001'                   # Map local port 8001 to the server container's port 8001
-    environment:                      # MySQL connection details for the backend
-      - DB_HOST=mysql                 # MySQL container's hostname
-      - DB_USER=ali                   # MySQL username
-      - DB_PASSWORD=root              # MySQL password
-      - DB_NAME=crudmysql             # MySQL database name
-    depends_on:                       # Make sure MySQL starts before the backend
+      - '8001:8001'                   
+    environment:                     
+      - DB_HOST=mysql                 
+      - DB_USER=ali                   
+      - DB_PASSWORD=root             
+      - DB_NAME=crudmysql            
+    depends_on:                       
       mysql:
-        condition: service_healthy
+        condition: service_healthy    
+    restart: unless-stopped           
 
   # React frontend service
   client:
-    build: ./client                   # Build the image from client/Dockerfile
+    build: ./client                   
     ports:
-      - '3000:3000'                   # Map local port 3000 to the client container's port 3000
-    depends_on:                       # Wait for the server to be running before starting the client
+      - '3000:3000'                   
+    depends_on:                       
       - server
+    restart: unless-stopped          
 
   # MySQL service
   mysql:
-    image: mysql:8.0                  # Use MySQL version 8.0
+    image: mysql:8.0                  
     environment:
-      MYSQL_ROOT_PASSWORD: root     # Root password for MySQL
-      MYSQL_DATABASE: crudmysql        # Create and use the 'crudmysql' database
-      MYSQL_USER: ali                  # MySQL user
-      MYSQL_PASSWORD: root             # Password for user 'ali'
+      MYSQL_ROOT_PASSWORD: root    
+      MYSQL_DATABASE: crudmysql        
+      MYSQL_USER: ali                 
+      MYSQL_PASSWORD: root             
     ports:
-      - '3333:3306'                   # Map local port 3333 to the MySQL container's port 3306
+      - '3333:3306'                   
     volumes:
-      - mysql-data:/var/lib/mysql      # Persist MySQL data
-      - ./initdb/init.sql:/docker-entrypoint-initdb.d/init.sql  # Mount init.sql
+      - mysql-data:/var/lib/mysql      
+      - ./initdb/init.sql:/docker-entrypoint-initdb.d/init.sql  
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]   
       interval: 10s
-      timeout: 5s
-      retries: 5
+      timeout: 10s
+      retries: 7                   
+    restart: unless-stopped           
 
-# Define named volumes for MySQL
 volumes:
   mysql-data:
