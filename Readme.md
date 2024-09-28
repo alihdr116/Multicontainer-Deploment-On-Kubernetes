@@ -37,7 +37,7 @@ http://localhost:3000
 ### 6. Troubleshooting
 If the application doesn't work the first time, try stopping the containers and running them again:
 
-```bash
+bash
 docker-compose down
 docker-compose up
 
