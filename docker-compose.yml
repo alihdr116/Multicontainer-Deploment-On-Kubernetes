@@ -1,5 +1,4 @@
 services:
-
   server:
     build: ./server                  
     ports:
@@ -13,6 +12,7 @@ services:
       mysql:
         condition: service_healthy    
     restart: unless-stopped           
+    command: ["./wait-for-it.sh", "mysql:3306", "--", "nodemon", "app.js"]
 
   # React frontend service
   client:

@@ -19,8 +19,12 @@ RUN npm install -g cors
 # Copy the rest of the server code into the container
 COPY . .
 
+# Download and set up wait-for-it script
+RUN curl -o wait-for-it.sh https://raw.githubusercontent.com/vishnubob/wait-for-it/master/wait-for-it.sh
+RUN chmod +x wait-for-it.sh
+
 # Start the backend with nodemon
-CMD ["nodemon", "app.js"]
+CMD ["./wait-for-it.sh", "mysql:3306", "--", "nodemon", "app.js"]
 
 # Expose port 8001 for the backend API
 EXPOSE 8001
