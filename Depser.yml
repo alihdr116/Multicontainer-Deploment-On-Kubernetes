@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: server
+  namespace: myapp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: server
+  template:
+    metadata:
+      labels:
+        app: server
+    spec:
+      containers:
+        - name: server
+          image: iamalihdr116/serverup # Replace with the image built from your server Dockerfile
+          env:
+            - name: DB_HOST
+              value: mysql
+            - name: DB_USER
+              value: ali
+            - name: DB_PASSWORD
+              value: root
+            - name: DB_NAME
+              value: crudmysql
+          ports:
+            - containerPort: 8001
+          command: ["./wait-for-it.sh", "mysql:3306", "--", "nodemon", "app.js"]
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: server
+  namespace: myapp
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8001
+      targetPort: 8001
+  selector:
+    app: server
