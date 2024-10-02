@@ -1,0 +1,53 @@
+name: Deploy to Minikube
+
+on:
+  push:
+    branches:
+      - main  # Adjust this to your default branch
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      - name: Install Docker
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y apt-transport-https ca-certificates curl software-properties-common
+          curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+          echo "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list
+          sudo apt-get update
+          sudo apt-get install -y docker-ce docker-ce-cli containerd.io
+          sudo systemctl start docker
+          sudo systemctl enable docker
+
+      - name: Install Minikube
+        run: |
+          curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+          sudo install minikube-linux-amd64 /usr/local/bin/minikube
+          # Clean up the downloaded file
+          rm minikube-linux-amd64
+
+      - name: Start Minikube
+        run: |
+          minikube start --driver=docker
+
+      - name: Set up kubectl
+        run: |
+          KUBECTL_VERSION=$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt) && \
+          echo "Downloading kubectl version: ${KUBECTL_VERSION}" && \
+          curl -LO "https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl" && \
+          sudo install kubectl /usr/local/bin/ && \
+          # Clean up the downloaded file
+          rm kubectl
+
+      - name: Create namespace
+        run: |
+          kubectl create namespace myapp || echo "Namespace 'myapp' already exists"
+
+      - name: Deploy to Kubernetes
+        run: |
+          kubectl apply -f k8s/ --namespace=myapp
