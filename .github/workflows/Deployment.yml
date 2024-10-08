@@ -14,8 +14,8 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v2
 
-      # Step 2: Snyk Vulnerability Scan (Server)
-      - name: Snyk Code and Dependency Scan (Server)
+      # Step 2: Snyk Vulnerability Scan 
+      - name: Snyk Code and Dependency Scan 
         uses: snyk/actions/node@master  # Use the latest stable version
         with:
           command: test
@@ -23,15 +23,7 @@ jobs:
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
-      # Step 3: Snyk Vulnerability Scan (Client)
-      - name: Snyk Code and Dependency Scan (Client)
-        uses: snyk/actions/node@master  # Use the latest stable version
-        with:
-          command: test
-          args: client
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-
+    
       # Step 4: Install Docker
       - name: Install Docker
         run: |
