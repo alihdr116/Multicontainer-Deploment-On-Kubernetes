@@ -16,19 +16,17 @@ jobs:
 
       # Step 2: Snyk Vulnerability Scan (Server)
       - name: Snyk Code and Dependency Scan (Server)
-        uses: snyk/actions/node@v1
+        uses: snyk/actions/node@v1.12.0  # Use the latest stable version
         with:
           command: test
-          args: server
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
       # Step 3: Snyk Vulnerability Scan (Client)
       - name: Snyk Code and Dependency Scan (Client)
-        uses: snyk/actions/node@v1
+        uses: snyk/actions/node@v1.12.0  # Use the latest stable version
         with:
           command: test
-          args: client
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
@@ -63,4 +61,16 @@ jobs:
           KUBECTL_VERSION=$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt) && \
           echo "Downloading kubectl version: ${KUBECTL_VERSION}" && \
           curl -LO "https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl" && \
-          sudo install kubectl /usr
+          sudo install kubectl /usr/local/bin/ && \
+          # Clean up the downloaded file
+          rm kubectl
+
+      # Step 8: Create namespace
+      - name: Create namespace
+        run: |
+          kubectl create namespace myapp || echo "Namespace 'myapp' already exists"
+
+      # Step 9: Run OWASP ZAP scan
+      - name: Run OWASP ZAP scan
+        run: |
+          docker run 
