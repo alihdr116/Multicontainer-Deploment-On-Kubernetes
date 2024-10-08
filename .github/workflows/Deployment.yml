@@ -19,6 +19,7 @@ jobs:
         uses: snyk/actions/node@master  # Use the latest stable version
         with:
           command: test
+          args: server
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
@@ -27,6 +28,7 @@ jobs:
         uses: snyk/actions/node@master  # Use the latest stable version
         with:
           command: test
+          args: client
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
