@@ -16,7 +16,7 @@ jobs:
 
       # Step 2: Snyk Vulnerability Scan (Server)
       - name: Snyk Code and Dependency Scan (Server)
-        uses: snyk/actions/node@master
+        uses: snyk/actions/node@v1
         with:
           command: test
           args: server
@@ -25,4 +25,42 @@ jobs:
 
       # Step 3: Snyk Vulnerability Scan (Client)
       - name: Snyk Code and Dependency Scan (Client)
-        uses: snyk/actions/node@
+        uses: snyk/actions/node@v1
+        with:
+          command: test
+          args: client
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+
+      # Step 4: Install Docker
+      - name: Install Docker
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y apt-transport-https ca-certificates curl software-properties-common
+          curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+          echo "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list
+          sudo apt-get update
+          sudo apt-get install -y docker-ce docker-ce-cli containerd.io
+          sudo systemctl start docker
+          sudo systemctl enable docker
+
+      # Step 5: Install Minikube
+      - name: Install Minikube
+        run: |
+          curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+          sudo install minikube-linux-amd64 /usr/local/bin/minikube
+          # Clean up the downloaded file
+          rm minikube-linux-amd64
+
+      # Step 6: Start Minikube
+      - name: Start Minikube
+        run: |
+          minikube start --driver=docker
+
+      # Step 7: Set up kubectl
+      - name: Set up kubectl
+        run: |
+          KUBECTL_VERSION=$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt) && \
+          echo "Downloading kubectl version: ${KUBECTL_VERSION}" && \
+          curl -LO "https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl" && \
+          sudo install kubectl /usr
