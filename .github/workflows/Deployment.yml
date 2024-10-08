@@ -13,6 +13,7 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v2
 
+      # Install Docker
       - name: Install Docker
         run: |
           sudo apt-get update
@@ -24,30 +25,47 @@ jobs:
           sudo systemctl start docker
           sudo systemctl enable docker
 
+      # Install Minikube
       - name: Install Minikube
         run: |
           curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
           sudo install minikube-linux-amd64 /usr/local/bin/minikube
-          # Clean up the downloaded file
           rm minikube-linux-amd64
 
+      # Start Minikube
       - name: Start Minikube
         run: |
           minikube start --driver=docker
 
+      # Set up kubectl
       - name: Set up kubectl
         run: |
           KUBECTL_VERSION=$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt) && \
           echo "Downloading kubectl version: ${KUBECTL_VERSION}" && \
           curl -LO "https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl" && \
           sudo install kubectl /usr/local/bin/ && \
-          # Clean up the downloaded file
           rm kubectl
 
+      # Create namespace
       - name: Create namespace
         run: |
           kubectl create namespace myapp || echo "Namespace 'myapp' already exists"
 
+      # Vulnerability Scanning - Snyk for code and dependency scanning
+      - name: Snyk Code and Dependency Scan
+        uses: snyk/actions/node@master
+        with:
+          command: test # To test for vulnerabilities
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+
+      # Vulnerability Scanning - OWASP ZAP for security testing
+      - name: OWASP ZAP Scan
+        uses: zaproxy/action-baseline@v0.7.0
+        with:
+          target: 'http://localhost:3000'  # Replace with the correct endpoint of your client or server app
+
+      # Deploy to Kubernetes
       - name: Deploy to Kubernetes
         run: |
           kubectl apply -f k8s/ --namespace=myapp
