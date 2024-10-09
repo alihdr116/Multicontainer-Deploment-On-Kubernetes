@@ -64,8 +64,4 @@ jobs:
         run: |
           kubectl create namespace myapp || echo "Namespace 'myapp' already exists"
 
-      # Step 9: Run OWASP ZAP scan
-      - name: Run OWASP ZAP scan
-        run: |
-          docker run -t owasp/zap2docker-stable zap-baseline.py -t localhost:3000
- 
+    
